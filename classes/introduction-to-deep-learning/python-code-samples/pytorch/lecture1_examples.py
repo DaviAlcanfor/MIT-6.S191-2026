@@ -1,39 +1,41 @@
-import tensorflow as tf
+import torch
+from torch import nn
 
 
-class MyDenseLayer(tf.keras.layers.Layer):
+class MyDenseLayer(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(MyDenseLayer, self).__init__()
-        self.W = self.add_weight([input_dim, output_dim])
-        self.b = self.add_weight([1, output_dim])
+        self.W = nn.Parameter(torch.randn(input_dim, output_dim, requires_grad=True))
+        self.b = nn.Parameter(torch.randn(1, output_dim, requires_grad=True))
 
-    def call(self, inputs):
-        z = tf.matmul(inputs, self.W) + self.b
-        output = tf.math.sigmoid(z)
+    def forward(self, inputs):
+        z = torch.matmul(inputs, self.W) + self.b
+        output = torch.sigmoid(z)
         return output
 
 
-layer = tf.keras.layers.Dense(units=2)
+layer = nn.Linear(in_features=m, out_features=2)
 
 
-model_two_layers = tf.keras.Sequential([
-    tf.keras.layers.Dense(n),
-    tf.keras.layers.Dense(2)
-])
+model_two_layers = nn.Sequential(
+    nn.Linear(m, n),
+    nn.ReLU(),
+    nn.Linear(n, 2)
+)
 
 
-model_deep = tf.keras.Sequential([
-    tf.keras.layers.Dense(n1),
-    tf.keras.layers.Dense(n2),
-    tf.keras.layers.Dense(2)
-])
+model_deep = nn.Sequential(
+    nn.Linear(m, n1),
+    nn.ReLU(),
+    nn.Linear(n1, n2),
+    nn.ReLU(),
+    nn.Linear(n2, 2)
+)
 
 
-weights = tf.Variable([tf.random.normal()])
+weights = torch.randn(..., requires_grad=True)
 
 while True:
-    with tf.GradientTape() as g:
-        loss = compute_loss(weights)
-        gradient = g.gradient(loss, weights)
-
-    weights = weights - lr * gradient
+    loss = compute_loss(weights)
+    loss.backward()
+    weights = weights - lr * weights.grad
